@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT PARTNER - MILO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin: 8px 0;
+            word-wrap: break-word;
+        }
+        .chat-bubble.user {
+            background: #3b82f6;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.admin {
+            background: #e2e8f0;
+            color: #1e293b;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .tier-prib { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); }
+        .tier-basic { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); }
+        .tier-standar { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #92400e 100%); }
+        
+        .checkbox-custom:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+        <div class="glass rounded-2xl p-8 w-full max-w-md mx-4 animate-slide-up">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="building-2" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="font-display text-3xl font-bold">PT PARTNER</h1>
+                <p class="text-gray-400 text-sm mt-2">by MILO Enterprise</p>
+            </div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                    <input type="text" id="login-username" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Masukkan username">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                    <input type="password" id="login-password" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Masukkan password">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center">
+                    <i data-lucide="log-in" class="w-5 h-5 mr-2"></i>
+                    Login
+                </button>
+            </form>
+            
+            <div id="login-error" class="mt-4 text-red-400 text-sm text-center hidden"></div>
+            
+            <div class="mt-6 text-center text-xs text-gray-500">
+                <p>Demo: admin/admin (Admin)</p>
+                <p>Demo: user/user (User)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP (Hidden until login) -->
+    <div id="main-app" class="hidden">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-40 glass bg-gray-900/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="building-2" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-display font-bold text-lg">PT PARTNER</h1>
+                            <p class="text-xs text-gray-400" id="user-role-display">User</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <span id="current-user" class="text-sm text-gray-400 hidden sm:block"></span>
+                        <button onclick="logout()" class="flex items-center space-x-2 text-red-400 hover:text-red-300 text-sm">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <div class="pt-20 pb-24 px-4 max-w-7xl mx-auto">
+            
+            <!-- PT Hierarchy -->
+            <section class="mb-12">
+                <h2 class="font-display text-3xl font-bold mb-6">Struktur PT</h2>
+                
+                <!-- PT PRIB -->
+                <div class="tier-prib rounded-2xl p-6 mb-4 border border-indigo-500/30 shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                                <i data-lucide="crown" class="w-6 h-6 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-yellow-400 font-bold">TOP TIER</span>
+                                <h3 class="text-2xl font-bold">PT PRIB</h3>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">Full Access</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">Priority</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <!-- PT BASIC -->
+                    <div class="tier-basic rounded-2xl p-6 border border-gray-600/30">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gray-700/50 rounded-xl flex items-center justify-center">
+                                <i data-lucide="gem" class="w-6 h-6 text-blue-400"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-blue-400 font-bold">LEVEL 2</span>
+                                <h3 class="text-xl font-bold">PT BASIC</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PT STANDAR -->
+                    <div class="tier-standar rounded-2xl p-6 border border-orange-600/30">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-orange-900/50 rounded-xl flex items-center justify-center">
+                                <i data-lucide="award" class="w-6 h-6 text-orange-400"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-orange-400 font-bold">LEVEL 3</span>
+                                <h3 class="text-xl font-bold">PT STANDAR</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Panel (Admin Only) -->
+            <section id="admin-panel" class="hidden mb-12">
+                <div class="glass rounded-2xl p-6 border border-blue-500/30">
+                    <h3 class="font-display text-xl font-bold mb-4 flex items-center">
+                        <i data-lucide="shield" class="w-5 h-5 mr-2 text-blue-400"></i>
+                        Admin Panel
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <button onclick="openAddUserModal()" class="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center space-x-3 transition-colors">
+                            <i data-lucide="user-plus" class="w-6 h-6 text-green-400"></i>
+                            <div class="text-left">
+                                <p class="font-medium">Tambah User</p>
+                                <p class="text-xs text-gray-400">Buat akun baru</p>
+                            </div>
+                        </button>
+                        
+                        <button onclick="loadUsers()" class="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center space-x-3 transition-colors">
+                            <i data-lucide="users" class="w-6 h-6 text-blue-400"></i>
+                            <div class="text-left">
+                                <p class="font-medium">Kelola Users</p>
+                                <p class="text-xs text-gray-400">Lihat semua user</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Berita Section -->
+            <section class="mb-12">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-display text-3xl font-bold">Berita & Media</h2>
+                    <button onclick="openUploadModal()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center text-sm font-medium transition-colors">
+                        <i data-lucide="upload-cloud" class="w-4 h-4 mr-2"></i>
+                        Upload Berita
+                    </button>
+                </div>
+
+                <!-- Filter -->
+                <div class="flex space-x-2 mb-6 overflow-x-auto hide-scrollbar pb-2">
+                    <button onclick="filterNews('all')" class="filter-btn active px-4 py-2 rounded-full bg-blue-600 text-white text-sm whitespace-nowrap" data-filter="all">Semua</button>
+                    <button onclick="filterNews('prib')" class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-400 text-sm whitespace-nowrap" data-filter="prib">PT PRIB</button>
+                    <button onclick="filterNews('basic')" class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-400 text-sm whitespace-nowrap" data-filter="basic">PT BASIC</button>
+                    <button onclick="filterNews('standar')" class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-gray-400 text-sm whitespace-nowrap" data-filter="standar">PT STANDAR</button>
+                </div>
+
+                <!-- News Grid -->
+                <div id="news-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- News items will be loaded here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Chat Widget -->
+        <div id="chat-widget" class="fixed bottom-20 right-4 w-80 sm:w-96 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 hidden flex-col z-30 max-h-[500px]">
+            <div class="bg-blue-600 p-4 rounded-t-2xl flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i data-lucide="user" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white">Admin MILO</h4>
+                        <p class="text-xs text-blue-100 flex items-center">
+                            <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                            Online via Telegram
+                        </p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="text-white/80 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-900 max-h-80 min-h-[300px]">
+                <!-- Messages loaded here -->
+            </div>
+
+            <div class="p-3 bg-gray-800 border-t border-gray-700 rounded-b-2xl">
+                <form id="chat-form" onsubmit="sendMessage(event)" class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Ketik pesan..." class="flex-1 bg-gray-900 border border-gray-700 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500 text-white" required>
+                    <button type="submit" class="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors">
+                        <i data-lucide="send" class="w-4 h-4 text-white"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chat Toggle -->
+        <button id="chat-toggle" onclick="toggleChat()" class="fixed bottom-4 right-4 w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full shadow-2xl flex items-center justify-center transition-all z-30">
+            <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
+            <span id="chat-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold hidden">0</span>
+        </button>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80" onclick="closeUploadModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-4">
+            <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl animate-slide-up">
+                <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="font-display text-xl font-bold">Upload Berita Baru</h3>
+                    <button onclick="closeUploadModal()" class="text-gray-400 hover:text-white">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <form id="upload-form" onsubmit="handleUpload(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Pilih PT (bisa lebih dari 1)</label>
+                        <div class="space-y-2 bg-gray-900 p-4 rounded-lg border border-gray-700">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" name="pt" value="prib" class="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-800">
+                                <span class="flex items-center"><i data-lucide="crown" class="w-4 h-4 mr-2 text-yellow-400"></i> PT PRIB</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" name="pt" value="basic" class="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-800">
+                                <span class="flex items-center"><i data-lucide="gem" class="w-4 h-4 mr-2 text-blue-400"></i> PT BASIC</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" name="pt" value="standar" class="w-5 h-5 rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-800">
+                                <span class="flex items-center"><i data-lucide="award" class="w-4 h-4 mr-2 text-orange-400"></i> PT STANDAR</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">* Centang minimal 1 PT</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Judul Berita</label>
+                        <input type="text" id="upload-title" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="Masukkan judul...">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Deskripsi</label>
+                        <textarea id="upload-desc" rows="3" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="Deskripsi berita..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">File (Opsional)</label>
+                        <input type="file" id="upload-file" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                    </div>
+
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" onclick="closeUploadModal()" class="flex-1 px-4 py-2 border border-gray-700 rounded-lg text-gray-400 hover:bg-gray-800">Batal</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal (Admin Only) -->
+    <div id="add-user-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80" onclick="closeAddUserModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-4">
+            <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl animate-slide-up">
+                <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="font-display text-xl font-bold">Tambah User Baru</h3>
+                    <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-white">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <form id="add-user-form" onsubmit="handleAddUser(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                        <input type="text" id="new-username" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                        <input type="password" id="new-password" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Role</label>
+                        <select id="new-role" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg">Tambah User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users List Modal (Admin Only) -->
+    <div id="users-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80" onclick="closeUsersModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-4">
+            <div class="bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl max-h-[80vh] flex flex-col">
+                <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="font-display text-xl font-bold">Daftar Users</h3>
+                    <button onclick="closeUsersModal()" class="text-gray-400 hover:text-white">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div id="users-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+                    <!-- Users loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-24 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center">
+        <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+        <span id="toast-message">Success!</span>
+    </div>
+
+    <script>
+        // CONFIG - GANTI INI SESUAI DEPLOYMENT
+        const API_URL = window.location.origin; // Untuk Vercel, gunakan relative URL
+        const USER_ID = () => currentUser ? currentUser.id : null;
+        
+        let currentUser = null;
+        let chatInterval = null;
+        let unreadCount = 0;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            checkSession();
+        });
+
+        // Auth Functions
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    currentUser = data.user;
+                    showMainApp();
+                } else {
+                    showError(data.message);
+                }
+            } catch (err) {
+                showError('Connection failed');
+            }
+        }
+
+        async function checkSession() {
+            try {
+                const res = await fetch(`${API_URL}/api/me`);
+                const data = await res.json();
+                if (data.user) {
+                    currentUser = data.user;
+                    showMainApp();
+                }
+            } catch (err) {
+                console.log('No session');
+            }
+        }
+
+        async function logout() {
+            await fetch(`${API_URL}/api/logout`, { method: 'POST' });
+            currentUser = null;
+            location.reload();
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('login-error');
+            err.textContent = msg;
+            err.classList.remove('hidden');
+        }
+
+        function showMainApp() {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('current-user').textContent = currentUser.username;
+            document.getElementById('user-role-display').textContent = currentUser.role === 'admin' ? 'Administrator' : 'User';
+            
+            if (currentUser.role === 'admin') {
+                document.getElementById('admin-panel').classList.remove('hidden');
+            }
+            
+            loadNews();
+            startChatPolling();
+            lucide.createIcons();
+        }
+
+        // News Functions
+        async function loadNews() {
+            try {
+                const res = await fetch(`${API_URL}/api/news`);
+                const data = await res.json();
+                renderNews(data.news);
+            } catch (err) {
+                console.error('Failed to load news');
+            }
+        }
+
+        function renderNews(news) {
+            const grid = document.getElementById('news-grid');
+            grid.innerHTML = '';
+            
+            news.forEach(item => {
+                const pts = item.pts.split(',');
+                const ptBadges = pts.map(pt => {
+                    const colors = { prib: 'bg-indigo-600', basic: 'bg-blue-600', standar: 'bg-orange-600' };
+                    const names = { prib: 'PRIB', basic: 'BASIC', standar: 'STANDAR' };
+                    return `<span class="px-2 py-1 ${colors[pt]} rounded text-xs mr-1">${names[pt]}</span>`;
+                }).join('');
+                
+                const card = document.createElement('div');
+                card.className = 'glass rounded-xl overflow-hidden hover:scale-[1.02] transition-transform';
+                card.setAttribute('data-pt', item.pts);
+                card.innerHTML = `
+                    <div class="h-32 bg-gradient-to-br from-gray-700 to-gray-800 relative p-4">
+                        <div class="absolute top-2 left-2 flex flex-wrap gap-1">${ptBadges}</div>
+                        <div class="absolute bottom-2 right-2 text-xs text-gray-400">${new Date(item.created_at).toLocaleDateString('id-ID')}</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">${item.title}</h3>
+                        <p class="text-gray-400 text-sm mb-3">${item.description}</p>
+                        ${item.file_url ? `<a href="${item.file_url}" target="_blank" class="text-blue-400 text-sm flex items-center hover:underline"><i data-lucide="download" class="w-4 h-4 mr-1"></i> Download File</a>` : ''}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function filterNews(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === category) {
+                    btn.classList.remove('bg-gray-800', 'text-gray-400');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    btn.classList.add('bg-gray-800', 'text-gray-400');
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                }
+            });
+            
+            document.querySelectorAll('#news-grid > div').forEach(item => {
+                if (category === 'all' || item.getAttribute('data-pt').includes(category)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Upload Functions
+        function openUploadModal() {
+            document.getElementById('upload-modal').classList.remove('hidden');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('upload-modal').classList.add('hidden');
+            document.getElementById('upload-form').reset();
+        }
+
+        async function handleUpload(e) {
+            e.preventDefault();
+            
+            const checkedPts = Array.from(document.querySelectorAll('input[name="pt"]:checked')).map(cb => cb.value);
+            if (checkedPts.length === 0) {
+                showToast('Pilih minimal 1 PT!', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('pts', checkedPts.join(','));
+            formData.append('title', document.getElementById('upload-title').value);
+            formData.append('description', document.getElementById('upload-desc').value);
+            
+            const file = document.getElementById('upload-file').files[0];
+            if (file) formData.append('file', file);
+            
+            try {
+                const res = await fetch(`${API_URL}/api/news`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    showToast('Berita berhasil diupload!');
+                    closeUploadModal();
+                    loadNews();
+                }
+            } catch (err) {
+                showToast('Upload gagal!', 'error');
+            }
+        }
+
+        // Chat Functions
+        function toggleChat() {
+            const widget = document.getElementById('chat-widget');
+            if (widget.classList.contains('hidden')) {
+                widget.classList.remove('hidden');
+                widget.classList.add('flex');
+                unreadCount = 0;
+                updateChatBadge();
+                loadMessages();
+            } else {
+                widget.classList.add('hidden');
+                widget.classList.remove('flex');
+            }
+        }
+
+        async function loadMessages() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${API_URL}/api/messages/${currentUser.id}`);
+                const data = await res.json();
+                renderMessages(data.messages);
+            } catch (err) {
+                console.error('Failed to load messages');
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            
+            messages.forEach(msg => {
+                const isUser = msg.sender_id == currentUser.id;
+                const bubble = document.createElement('div');
+                bubble.className = `chat-bubble ${isUser ? 'user' : 'admin'}`;
+                bubble.innerHTML = `
+                    <p class="text-sm">${msg.message}</p>
+                    <span class="text-xs opacity-70 block ${isUser ? 'text-right' : ''}">${new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                `;
+                container.appendChild(bubble);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            try {
+                await fetch(`${API_URL}/api/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        message: message,
+                        sender: 'user'
+                    })
+                });
+                
+                input.value = '';
+                loadMessages();
+            } catch (err) {
+                showToast('Gagal mengirim pesan', 'error');
+            }
+        }
+
+        function startChatPolling() {
+            chatInterval = setInterval(async () => {
+                if (document.getElementById('chat-widget').classList.contains('hidden')) {
+                    // Check for new messages when chat is closed
+                    try {
+                        const res = await fetch(`${API_URL}/api/messages/${currentUser.id}/unread`);
+                        const data = await res.json();
+                        if (data.count > unreadCount) {
+                            unreadCount = data.count;
+                            updateChatBadge();
+                        }
+                    } catch (err) {}
+                } else {
+                    loadMessages();
+                }
+            }, 3000);
+        }
+
+        function updateChatBadge() {
+            const badge = document.getElementById('chat-badge');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Admin Functions
+        function openAddUserModal() {
+            document.getElementById('add-user-modal').classList.remove('hidden');
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('add-user-modal').classList.add('hidden');
+            document.getElementById('add-user-form').reset();
+        }
+
+        async function handleAddUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const role = document.getElementById('new-role').value;
+            
+            try {
+                const res = await fetch(`${API_URL}/api/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    showToast('User berhasil ditambahkan!');
+                    closeAddUserModal();
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (err) {
+                showToast('Gagal menambah user', 'error');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/api/users`);
+                const data = await res.json();
+                renderUsers(data.users);
+                document.getElementById('users-modal').classList.remove('hidden');
+            } catch (err) {
+                showToast('Gagal memuat users', 'error');
+            }
+        }
+
+        function renderUsers(users) {
+            const list = document.getElementById('users-list');
+            list.innerHTML = users.map(u => `
+                <div class="flex items-center justify-between bg-gray-900 p-3 rounded-lg">
+                    <div>
+                        <p class="font-medium">${u.username}</p>
+                        <span class="text-xs px-2 py-1 rounded ${u.role === 'admin' ? 'bg-red-600' : 'bg-blue-600'}">${u.role}</span>
+                    </div>
+                    ${u.id !== currentUser.id ? `
+                        <button onclick="deleteUser(${u.id})" class="text-red-400 hover:text-red-300">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    ` : '<span class="text-xs text-gray-500">You</span>'}
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function closeUsersModal() {
+            document.getElementById('users-modal').classList.add('hidden');
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Hapus user ini?')) return;
+            try {
+                await fetch(`${API_URL}/api/users/${id}`, { method: 'DELETE' });
+                loadUsers();
+                showToast('User dihapus');
+            } catch (err) {
+                showToast('Gagal menghapus user', 'error');
+            }
+        }
+
+        // Utility
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-message');
+            msg.textContent = message;
+            
+            if (type === 'error') {
+                toast.classList.remove('bg-green-600');
+                toast.classList.add('bg-red-600');
+            } else {
+                toast.classList.remove('bg-red-600');
+                toast.classList.add('bg-green-600');
+            }
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
