@@ -12,9 +12,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Telegram Bot Config - GANTI INI
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_BOT_TOKEN';
-const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || 'YOUR_CHAT_ID';
-
+const TELEGRAM_BOT_TOKEN = '8771288742:AAHkrLhBDHwHhhgmSRHXZYA4Z5DqFSRMLiI';
+const TELEGRAM_ADMIN_CHAT_ID = '8771288742:AAHkrLhBDHwHhhgmSRHXZYA4Z5DqFSRMLiI'; 
 // Middleware
 app.use(express.json());
 app.use(express.static('public'));
